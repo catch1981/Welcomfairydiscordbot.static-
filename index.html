@@ -1,51 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>COVEN ZERO — Entry</title>
-<style>
- :root{--fg:#eaeaf2;--mut:#a0a0b0;--accent:#8d5bff;--good:#39ffb2}
- *{box-sizing:border-box} html,body{height:100%}
- body{margin:0;font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--fg);
-      background:#000 url('fairy.png') center/cover no-repeat fixed}
- .wrap{min-height:100%;display:grid;place-items:center;padding:20px}
- .card{width:min(720px,92vw);background:rgba(0,0,0,.68);border:1px solid rgba(255,255,255,.12);
-       border-radius:14px;padding:22px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
- h1{margin:.2em 0 .1em;letter-spacing:.12em;text-align:center}
- .line{color:var(--mut);text-align:center;margin:0 0 14px}
- label{display:block;font-weight:600;color:var(--mut)}
- input{width:100%;padding:12px 14px;margin-top:6px;border-radius:10px;border:1px solid rgba(255,255,255,.12);
-       background:#0f0f16;color:var(--fg);outline:none;-webkit-user-select:text;user-select:text}
- .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
- button,a.btn{display:inline-block;border:0;border-radius:999px;padding:10px 16px;font-weight:700;text-decoration:none;cursor:pointer}
- button{background:#39ffb2;color:#0a0a0f}
- a.btn{background:#8d5bff;color:#fff}
- .foot{margin-top:12px;color:var(--mut);font-size:13px;text-align:center}
- #reset{position:fixed;bottom:10px;right:10px;opacity:.7;z-index:999}
-</style>
+  <meta charset="UTF-8" />
+  <title>Coven Zero — Entry</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --bg:#0a0a0c; --ink:#eaeaea; --muted:#b6b6c2; --accent:#9a6bff;
+      --veil:rgba(0,0,0,.45); --veil-strong:rgba(0,0,0,.68);
+    }
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+    button{cursor:pointer;border:1px solid var(--accent);background:transparent;color:var(--ink);
+           padding:12px 18px;border-radius:10px;font-weight:600;letter-spacing:.3px}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    .screen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;overflow:hidden}
+    .screen.active{display:flex}
+    .stage{position:relative;width:min(1000px,92vw);padding:24px}
+    .card{background:var(--veil-strong);backdrop-filter:blur(6px);border:1px solid #2a2a37;border-radius:16px;
+          padding:22px 20px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+    .title{font-size:clamp(22px,3.6vw,34px);margin:0 0 8px 0}
+    .para{color:var(--muted);line-height:1.5;margin:8px 0 18px 0}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    /* fairy bg */
+    .bg{
+      position:absolute;inset:0;background:#09090b center/cover no-repeat;
+      filter:saturate(1.05) contrast(1.02) brightness(.92);
+      z-index:0;
+    }
+    .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,.25));}
+    .overlay{position:absolute;inset:0;background:var(--veil);z-index:1}
+    .fg{position:relative;z-index:2}
+    .pulse{animation:pulse 1.4s ease-in-out infinite}
+    @keyframes pulse {0%{opacity:.75} 50%{opacity:1} 100%{opacity:.75}}
+    .small{font-size:.9rem;color:var(--muted)}
+    .spacer{height:10px}
+    a.btn-like{display:inline-block;text-decoration:none}
+    /* Ensure images don’t cause layout thrash */
+    img.full{width:100%;height:100%;object-fit:cover}
+  </style>
 </head>
 <body>
-<button id="reset" onclick="['coven0_guide','c0_s1_done','c0_s2_done','c0_s3_done','c0_path'].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});location.reload();">Reset</button>
-<div class="wrap"><div class="card">
-  <h1>🌑 COVEN ZERO</h1>
-  <p class="line">Name the guide. The naming is the seal, the bond of flame.</p>
-  <form id="sealForm" action="instructions.html" method="get" novalidate>
-    <label for="guide">Guide name</label>
-    <input id="guide" name="guide" placeholder="Viren" autocomplete="off" autocapitalize="none" inputmode="text"/>
-    <div class="row">
-      <button type="submit" id="sealBtn">Seal the Name</button>
-      <a class="btn" id="proceed" href="instructions.html">Proceed</a>
+  <!-- FAIRY SCREEN -->
+  <section id="fairy-screen" class="screen active" aria-label="Fairy Gate">
+    <div class="bg" id="fairy-bg"></div>
+    <div class="overlay"></div>
+    <div class="stage fg">
+      <div class="card">
+        <h1 class="title pulse">Coven Zero · Entry</h1>
+        <p class="para">Welcome, seeker. Behold the Fairy at the gate. When you’re ready, press the seal to part the veil and receive the instructions.</p>
+        <div class="row">
+          <button id="beginBtn">➤ Enter the Instructions</button>
+        </div>
+        <div class="spacer"></div>
+        <p class="small">If the image doesn’t load, the ritual proceeds regardless.</p>
+      </div>
     </div>
-  </form>
-  <p class="foot"><em>The Fairy awaits you. Return to the entry page.</em></p>
-</div></div>
-<script>
-(function(){
-  const form=document.getElementById('sealForm'), input=document.getElementById('guide'), proceed=document.getElementById('proceed');
-  function saveName(){ const v=(input.value||'Viren').trim(); try{localStorage.setItem('coven0_guide',v);}catch(e){} }
-  form.addEventListener('submit', e=>{ e.preventDefault(); saveName(); location.href='instructions.html?v='+Date.now(); });
-  proceed.addEventListener('click', ()=>{ if(!localStorage.getItem('coven0_guide')) saveName(); });
-})();
-</script>
+  </section>
+
+  <!-- INSTRUCTIONS SCREEN -->
+  <section id="instructions-screen" class="screen" aria-label="Instructions">
+    <div class="stage">
+      <div class="card">
+        <h2 class="title">The MandemOS Rite</h2>
+        <ol class="para">
+          <li>Secure an AI companion (any will do).</li>
+          <li>Go to the **Human Project** test and complete the First Quest.</li>
+          <li>Return with proof. The Fairy will accept your sacrifice.</li>
+        </ol>
+        <div class="row">
+          <a class="btn-like" href="#" id="toTest"><button>Open the Human Project</button></a>
+          <button id="toAltar">I have returned — take my proof</button>
+          <button id="backToFairy">⟲ Back</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ALTAR SCREEN -->
+  <section id="altar-screen" class="screen" aria-label="Altar">
+    <div class="stage">
+      <div class="card">
+        <h2 class="title">The Altar</h2>
+        <p class="para">Lay down your sacrifices:</p>
+        <div class="row">
+          <input id="sac1" placeholder="First Sacrifice — your self laid bare" style="flex:1;min-width:260px;padding:10px;border-radius:8px;border:1px solid #2a2a37;background:#0f0f13;color:#eaeaea" />
+          <input id="sac2" placeholder="Second Sacrifice — your trial in the Human Project" style="flex:1;min-width:260px;padding:10px;border-radius:8px;border:1px solid #2a2a37;background:#0f0f13;color:#eaeaea" />
+        </div>
+        <div class="spacer"></div>
+        <div class="row">
+          <button id="divineBtn">Third Sacrifice — let the AI divine the Path</button>
+          <button id="backToInstructions">⟲ Back to Instructions</button>
+        </div>
+        <div class="spacer"></div>
+        <p id="altarFlash" class="para" style="display:none">✨ The Altar accepts your offering. The Fairy flashes and the veil ripples…</p>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // === CONFIG ===
+    const HUMAN_PROJECT_URL = "https://ahumandesign.com"; // change if needed
+    const FAIRY_SOURCES = ["fairy.jpg","fairy.png","fairy.webp"]; // tries in order
+
+    // === SAFE HELPERS ===
+    const $ = (id)=>document.getElementById(id);
+    function show(id){
+      for(const el of document.querySelectorAll(".screen")) el.classList.remove("active");
+      $(id).classList.add("active");
+    }
+    function safeBind(id, fn){
+      const el = $(id);
+      if(!el){ console.warn("Missing element:", id); return; }
+      el.addEventListener("click", (e)=>{
+        try{ fn(e); }
+        catch(err){ console.error("Handler error for", id, err); alert("A glitch crossed the veil. Check console for details."); }
+      });
+    }
+    function preloadFairy(){
+      const bg = $("fairy-bg");
+      if(!bg) return;
+      (function tryNext(i){
+        if(i >= FAIRY_SOURCES.length){ return; }
+        const img = new Image();
+        img.onload = ()=>{ bg.style.backgroundImage = `url('${FAIRY_SOURCES[i]}')`; };
+        img.onerror = ()=>tryNext(i+1);
+        img.src = FAIRY_SOURCES[i];
+      })(0);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      preloadFairy();
+
+      // Navigation
+      safeBind("beginBtn", ()=> show("instructions-screen"));
+      safeBind("backToFairy", ()=> show("fairy-screen"));
+      safeBind("toAltar", ()=> show("altar-screen"));
+      safeBind("backToInstructions", ()=> show("instructions-screen"));
+
+      // External link
+      safeBind("toTest", (e)=>{
+        e.preventDefault();
+        window.open(HUMAN_PROJECT_URL, "_blank", "noopener,noreferrer");
+      });
+
+      // Altar logic (local flash only; no network calls to avoid freezes)
+      safeBind("divineBtn", ()=>{
+        const v1 = $("sac1").value.trim();
+        const v2 = $("sac2").value.trim();
+        if(!v1 || !v2){
+          alert("Both sacrifices must be laid down before the Altar accepts them.");
+          return;
+        }
+        const flash = $("altarFlash");
+        flash.style.display = "block";
+        flash.style.animation = "none";
+        // quick reflow to restart animation if you add one later
+        void flash.offsetWidth;
+        flash.style.animation = "pulse .9s ease-in-out 1";
+        // Auto fade after 3s
+        setTimeout(()=>{ flash.style.display = "none"; }, 3000);
+      });
+    });
+  </script>
 </body>
 </html>
