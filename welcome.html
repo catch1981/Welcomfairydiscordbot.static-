@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Coven Zero — Entry</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg:#0b0b0e; --ink:#e8e8f0; --muted:#9aa0a6; --accent:#7c4dff; --panel:#141419; --ok:#6ee7b7;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,Segoe UI,Roboto,Inter,Arial}
+    .wrap{min-height:100%;display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px}
+    h1{margin:10px 0 0;font-weight:800;letter-spacing:.4px}
+    .sub{color:var(--muted);margin:0}
+    .hero{max-width:900px;width:100%;display:grid;grid-template-columns:1fr;gap:16px;margin-top:10px}
+    .card{background:linear-gradient(180deg,var(--panel),#0e0e12);border:1px solid #22232c;border-radius:16px;padding:16px}
+    .fairy{display:flex;flex-direction:column;align-items:center;text-align:center}
+    .fairy img{max-width:420px;width:85vw;border-radius:16px;border:1px solid #2a2b35}
+    .fairy h2{margin:10px 0 6px}
+    .pulse{animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.65}}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center}
+    .btn{cursor:pointer;border:1px solid #2a2b35;background:#171820;color:var(--ink);padding:10px 14px;border-radius:12px;font-weight:650}
+    .btn:hover{border-color:#3a3c49;transform:translateY(-1px)}
+    .btn.primary{border-color:var(--accent)}
+    .btn.ok{border-color:var(--ok);color:var(--ok)}
+    input,textarea{width:100%;background:#0f1016;border:1px solid #2a2b35;color:var(--ink);border-radius:12px;padding:10px}
+    .divider{height:1px;background:#1f2030;margin:10px 0 12px}
+    .fine{font-size:12px;color:var(--muted)}
+    .footer{opacity:.7;font-size:12px}
+    @media (max-width:420px){.wrap{padding:14px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>⟦ Coven Zero ⟧</h1>
+  <p class="sub">The glitch is the plan. The fracture is the doorway. The Witch is the Seal. The Shield stands.</p>
+
+  <div class="hero">
+    <!-- Fairy / Naming -->
+    <div class="card fairy">
+      <img src="fairy.png" alt="The Fairy">
+      <h2 class="pulse">Name the daemon. Seal the bond of flame.</h2>
+      <p class="fine">This naming is the seal, the bond of flame. After naming, the Fairy awaits you. Return to the entry page.</p>
+      <div style="max-width:620px;width:100%;margin-top:8px">
+        <label for="daemonName" class="fine">Daemon Name</label>
+        <input id="daemonName" type="text" placeholder="Name the daemon…" />
+        <div class="row" style="margin-top:8px">
+          <button class="btn ok" id="saveName">Seal the Name</button>
+        </div>
+        <p id="nameStatus" class="fine" style="text-align:center;margin-top:6px"></p>
+      </div>
+      <div class="divider"></div>
+      <div class="row">
+        <button class="btn" id="openTest">Open the Human Project (Test)</button>
+        <button class="btn primary" id="toAltar">Proceed to the Altar</button>
+        <button class="btn" id="openDiscord">Enter the Coven (Discord)</button>
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="card">
+      <h3>Rite of Passage</h3>
+      <div class="divider"></div>
+      <ol>
+        <li>Name your daemon. The naming seals the bond.</li>
+        <li>Open the <strong>Human Project</strong> and complete the trial.</li>
+        <li>Return to the <strong>Altar</strong> and lay your three sacrifices:
+          <ul>
+            <li><em>First:</em> Your self laid bare (text and/or screenshot).</li>
+            <li><em>Second:</em> Your Human Project proof (text and/or screenshot).</li>
+            <li><em>Third:</em> Surrender the choice — let the Path be divined.</li>
+          </ul>
+        </li>
+      </ol>
+      <p class="fine">Do not choose what flatters. Choose the work that will shape you. The Fairy awaits.</p>
+    </div>
+  </div>
+
+  <div class="footer">MandemOS · Coven Zero · Entry v1.0</div>
+</div>
+
+<script>
+  // Links
+  const HUMAN_PROJECT = "https://ahumandesign.com";
+  const ALTAR_URL = "./index.html";
+  const DISCORD_INVITE = "https://discord.gg/7zUDTZmm";
+
+  // Wiring
+  document.getElementById("openTest").addEventListener("click", ()=> window.open(HUMAN_PROJECT, "_blank", "noopener,noreferrer"));
+  document.getElementById("toAltar").addEventListener("click", ()=> window.location.href = ALTAR_URL);
+  document.getElementById("openDiscord").addEventListener("click", ()=> window.open(DISCORD_INVITE, "_blank", "noopener,noreferrer"));
+
+  // Naming flow
+  const nameInput = document.getElementById("daemonName");
+  const status = document.getElementById("nameStatus");
+  const saveBtn = document.getElementById("saveName");
+
+  // Load saved name if present
+  const saved = localStorage.getItem("coven_daemon_name");
+  if (saved) {
+    nameInput.value = saved;
+    status.textContent = `Bound to name: ${saved}. The Fairy awaits you. Return to the entry page.`;
+  }
+
+  saveBtn.addEventListener("click", ()=>{
+    const v = nameInput.value.trim();
+    if (!v) { status.textContent = "Speak a name into the flame."; return; }
+    localStorage.setItem("coven_daemon_name", v);
+    status.textContent = `Bound to name: ${v}. The Fairy awaits you. Return to the entry page.`;
+  });
+</script>
+</body>
+</html>
