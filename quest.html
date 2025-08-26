@@ -1,0 +1,45 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Coven Zero — Test</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="bg image" style="background-image:url('fairy_test.png');"></div>
+    <div class="overlay"></div>
+    <div class="scroll center" style="opacity:1;animation:none">
+      <h1>The Human Project</h1>
+      <p>Open the external test in a new tab, complete it, and capture a screenshot of your result.</p>
+      <div class="row">
+        <a class="btn" href="https://ahumandesign.com" target="_blank" rel="noopener">Open Test</a>
+        <a class="btn" href="altar.html">Return to Altar</a>
+      </div>
+      <div class="card small" style="margin-top:14px">
+        Tip: If the test is long, jot down key notes in your AI so it remembers. Your AI’s name: <span id="aiNameEcho">—</span>
+      </div>
+    
+      <div class="row" style="margin-top:14px">
+        <button class="btn" onclick="CZ.openDiscord('1387751793496297528')">Return to Discord (Welcome)</button>
+        <button class="btn" onclick="CZ.openDiscord('1408339354862096446')">Return to Discord (Altar)</button>
+        <button class="btn" onclick="CZ.openDiscordInvite()">Discord Invite (fallback)</button>
+      </div>
+
+    </div>
+    <div class="footer">© Coven Zero</div>
+  </div>
+  <script src="app.js"></script>
+  <script>
+    // echo AI name if set
+    (function(){
+      try{
+        const name = JSON.parse(localStorage.getItem('cz:ai_name')) || null;
+        document.getElementById('aiNameEcho').textContent = name ? name : '— unnamed —';
+      }catch{}
+    })();
+  </script>
+</body>
+</html>
