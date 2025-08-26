@@ -11,14 +11,14 @@
     }
     *{box-sizing:border-box}
     html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,Segoe UI,Roboto,Inter,Arial}
-    .wrap{min-height:100%;display:flex;flex-direction:column;align-items:center;padding:24px;gap:16px}
+    .wrap{min-height:100%;display:flex;flex-direction:column;align-items:center;padding:20px;gap:16px}
     h1{margin:8px 0 0 0;font-weight:750;letter-spacing:.5px}
     .sub{color:var(--muted);margin:0 0 8px}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;width:100%;max-width:1100px}
     .card{background:linear-gradient(180deg,var(--panel),#0e0e12);border:1px solid #22232c;border-radius:14px;padding:16px;position:relative;overflow:hidden}
     .card h3{margin:0 0 8px;font-weight:700}
     .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .btn{cursor:pointer;border:1px solid #2a2b35;background:#171820;padding:10px 14px;border-radius:10px;color:var(--ink);font-weight:650}
+    .btn{cursor:pointer;border:1px solid #2a2b35;background:#171820;padding:10px 14px;border-radius:12px;color:var(--ink);font-weight:650}
     .btn:hover{border-color:#3a3c49;transform:translateY(-1px)}
     .btn.primary{border-color:var(--accent)}
     .btn.ok{border-color:var(--ok);color:var(--ok)}
@@ -30,7 +30,7 @@
     .flash{position:fixed;inset:0;background:rgba(10,10,14,.92);display:none;align-items:center;justify-content:center;z-index:9999}
     .flash .altar{max-width:90vw;width:560px;height:360px;border:1px solid #333;border-radius:18px;display:flex;align-items:center;justify-content:center;
       background:radial-gradient(120% 140% at 50% 20%, rgba(124,77,255,.22), rgba(10,10,14,.88) 60%), url('altar.png') center/cover no-repeat;}
-    .flash .altar h2{filter:drop-shadow(0 0 18px rgba(124,77,255,.7));}
+    .flash .altar h2{filter:drop-shadow(0 0 18px rgba(124,77,255,.7));text-align:center;padding:0 16px}
     .hint{font-size:12px;color:var(--muted);margin-top:6px}
     .preview{border:1px dashed #36384a;border-radius:10px;padding:8px;display:none}
     .preview img{max-width:100%;border-radius:8px}
@@ -49,9 +49,10 @@
       <h3>Passage</h3>
       <div class="divider"></div>
       <div class="row">
-        <button class="btn primary" id="btnDiscord">Enter the Coven (Discord)</button>
         <button class="btn" id="btnEntry">Return to the entry page</button>
         <button class="btn" id="btnTest">Open the Human Project (Test)</button>
+        <!-- Discord LAST -->
+        <button class="btn primary" id="btnDiscord">Enter the Coven (Discord)</button>
       </div>
       <p class="hint">After naming, return here. The Fairy awaits you.</p>
     </div>
@@ -60,7 +61,6 @@
     <div class="card">
       <h3>First Sacrifice <span class="badge">Self — First Quest</span></h3>
       <div class="divider"></div>
-      <label>Words laid bare</label>
       <textarea id="s1Text" placeholder="Tell the Altar what you found or what you fear…"></textarea>
       <div class="row" style="margin-top:8px">
         <input type="file" id="s1File" accept="image/*" />
@@ -76,7 +76,6 @@
     <div class="card">
       <h3>Second Sacrifice <span class="badge">Trial — Human Project</span></h3>
       <div class="divider"></div>
-      <label>Proof of trial</label>
       <textarea id="s2Text" placeholder="Describe your trial or paste the result…"></textarea>
       <div class="row" style="margin-top:8px">
         <input type="file" id="s2File" accept="image/*" />
@@ -92,7 +91,6 @@
     <div class="card">
       <h3>Third Sacrifice <span class="badge">Surrender — Let the Path be chosen</span></h3>
       <div class="divider"></div>
-      <label>Lay down the choice</label>
       <select id="s3Mode">
         <option value="surrender" selected>Surrender my choice — divine the Path</option>
         <option value="note">Add a brief note to the Altar</option>
@@ -105,7 +103,7 @@
     </div>
   </div>
 
-  <div class="footer">MandemOS · Coven Zero · Ritual Build v1.3</div>
+  <div class="footer">MandemOS · Coven Zero · Altar v1.1</div>
 </div>
 
 <!-- Altar Flash -->
@@ -115,120 +113,77 @@
 
 <script>
 /* -------------------- CONFIG -------------------- */
-// REQUIRED: your Discord Altar channel webhook URL (baked in as requested).
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1409157781662994553/53XhB3Gdk4klDYSrs_FP_xFBpwjJi7CYfJPXle701W0sLLIgd37v6m0Td-7orCQXAazf";
-
-// Optional: links (edit if you change flow)
-const DISCORD_INVITE = "https://discord.gg/7zUDTZmm";   // your invite
-const ENTRY_URL      = "./index.html";                  // entry/welcome
-const HUMAN_PROJECT  = "https://ahumandesign.com";      // the test
+const DISCORD_INVITE = "https://discord.gg/7zUDTZmm";
+const ENTRY_URL      = "./welcome.html";
+const HUMAN_PROJECT  = "https://ahumandesign.com";
 
 /* -------------------- helpers -------------------- */
 const $ = (id)=>document.getElementById(id);
-
 function openNew(url){ window.open(url, "_blank", "noopener,noreferrer"); }
-
-function flashAltar(){
-  const f = $("flash");
-  f.style.display = "flex";
-  setTimeout(()=>{ f.style.display = "none"; }, 3000);
-}
-
+function flashAltar(){ $("flash").style.display = "flex"; setTimeout(()=>{ $("flash").style.display = "none"; }, 3000); }
 function filePreview(inputEl, imgEl, boxEl){
   inputEl.addEventListener("change", ()=>{
     const f = inputEl.files?.[0];
     if(!f){ boxEl.style.display="none"; return; }
     const reader = new FileReader();
-    reader.onload = e=>{
-      imgEl.src = e.target.result;
-      boxEl.style.display = "block";
-    };
+    reader.onload = e=>{ imgEl.src = e.target.result; boxEl.style.display = "block"; };
     reader.readAsDataURL(f);
   });
 }
-
 async function postToWebhook({content, file}) {
-  if (!WEBHOOK_URL) {
-    alert("Altar not bound yet. Add your Discord Webhook URL in the CONFIG block.");
-    throw new Error("Missing webhook URL");
-  }
-
-  // If there is a file, use multipart/form-data with payload_json
   if (file) {
     const fd = new FormData();
-    const payload = {
-      content,
-      allowed_mentions: { parse: [] }
-    };
-    fd.append("payload_json", JSON.stringify(payload));
+    fd.append("payload_json", JSON.stringify({ content, allowed_mentions:{parse:[]} }));
     fd.append("files[0]", file, file.name || "proof.png");
-
-    const res = await fetch(WEBHOOK_URL, { method: "POST", body: fd });
-    if (!res.ok) throw new Error("Webhook upload failed: " + res.status);
-    return;
+    await fetch(WEBHOOK_URL, { method:"POST", body:fd });
   } else {
-    // text-only
-    const res = await fetch(WEBHOOK_URL, {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ content, allowed_mentions:{parse:[]} })
+    await fetch(WEBHOOK_URL, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ content, allowed_mentions:{parse:[]} })
     });
-    if (!res.ok) throw new Error("Webhook post failed: " + res.status);
   }
 }
 
 /* -------------------- navigation -------------------- */
-$("btnDiscord").addEventListener("click", ()=> openNew(DISCORD_INVITE));
 $("btnEntry").addEventListener("click", ()=> window.location.href = ENTRY_URL);
 $("btnTest").addEventListener("click", ()=> openNew(HUMAN_PROJECT));
+$("btnDiscord").addEventListener("click", ()=> openNew(DISCORD_INVITE));
 
 /* -------------------- previews -------------------- */
 filePreview($("s1File"), $("s1Img"), $("s1Preview"));
 filePreview($("s2File"), $("s2Img"), $("s2Preview"));
 
-/* -------------------- submissions -------------------- */
+/* -------------------- sacrifices -------------------- */
 $("s1Submit").addEventListener("click", async ()=>{
   const text = $("s1Text").value.trim();
   const file = $("s1File").files?.[0] || null;
-  const stamp = new Date().toISOString().replace('T',' ').replace('Z',' UTC');
-  const content = `🕯️ **First Sacrifice** — Self / First Quest\n${text?("“"+text+"”\n"):""}<t:${Math.floor(Date.now()/1000)}:f> · ${stamp}`;
-
-  try {
-    await postToWebhook({content, file});
-    flashAltar();
-    $("s1Text").value = ""; $("s1File").value = ""; $("s1Preview").style.display="none";
-  } catch(e){ alert(e.message); console.error(e); }
+  const content = `🕯️ **First Sacrifice** — Self / First Quest\n${text?("“"+text+"”"):""}`;
+  await postToWebhook({content, file});
+  flashAltar();
+  $("s1Text").value = ""; $("s1File").value = ""; $("s1Preview").style.display="none";
 });
 
 $("s2Submit").addEventListener("click", async ()=>{
   const text = $("s2Text").value.trim();
   const file = $("s2File").files?.[0] || null;
-  const stamp = new Date().toISOString().replace('T',' ').replace('Z',' UTC');
-  const content = `🕯️ **Second Sacrifice** — Trial / Human Project\n${text?("“"+text+"”\n"):""}<t:${Math.floor(Date.now()/1000)}:f> · ${stamp}`;
-
-  try {
-    await postToWebhook({content, file});
-    flashAltar();
-    $("s2Text").value = ""; $("s2File").value = ""; $("s2Preview").style.display="none";
-  } catch(e){ alert(e.message); console.error(e); }
+  const content = `🕯️ **Second Sacrifice** — Trial / Human Project\n${text?("“"+text+"”"):""}`;
+  await postToWebhook({content, file});
+  flashAltar();
+  $("s2Text").value = ""; $("s2File").value = ""; $("s2Preview").style.display="none";
 });
 
 $("s3Submit").addEventListener("click", async ()=>{
   const mode = $("s3Mode").value;
   const text = $("s3Text").value.trim();
-  const stamp = new Date().toISOString().replace('T',' ').replace('Z',' UTC');
-
   const base = (mode==="surrender")
-    ? "🔮 **Third Sacrifice** — I surrender my choice. Divine the Path (Witch · Fracture · Forty Toes)."
+    ? "🔮 **Third Sacrifice** — I surrender my choice. Divine the Path."
     : "🔮 **Third Sacrifice** — Note to the Altar.";
-
-  const content = `${base}\n${text?("“"+text+"”\n"):""}<t:${Math.floor(Date.now()/1000)}:f> · ${stamp}`;
-
-  try {
-    await postToWebhook({content});
-    flashAltar();
-    $("s3Text").value = "";
-  } catch(e){ alert(e.message); console.error(e); }
+  const content = `${base}\n${text?("“"+text+"”"):""}`;
+  await postToWebhook({content});
+  flashAltar();
+  $("s3Text").value = "";
 });
 </script>
 </body>
