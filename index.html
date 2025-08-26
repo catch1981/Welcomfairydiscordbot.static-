@@ -1,74 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Coven Zero — Entry</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <title>Coven Zero — Welcome</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body,html{margin:0;padding:0;height:100%;background:#000;color:#eee;font-family:Arial, sans-serif}
-    .screen{display:none;align-items:center;justify-content:center;height:100%;text-align:center;padding:20px}
-    .screen.active{display:flex}
-    .card{background:rgba(0,0,0,.7);padding:20px;border-radius:10px;max-width:700px}
-    h1,h2{margin-top:0}
-    button{padding:10px 18px;margin:8px;border:1px solid #f90;background:#111;color:#eee;cursor:pointer;border-radius:6px}
-    button:hover{background:#222}
-    input{margin:5px;padding:8px;border-radius:6px;border:1px solid #666;background:#111;color:#eee;width:100%}
-    #fairy-screen{background:url("fairy.jpg") center/cover no-repeat}
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: 'Cinzel', serif;
+      background-color: black;
+      color: #fff;
+    }
+
+    .container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .fairy-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('fairy.png') no-repeat center center;
+      background-size: cover;
+      filter: brightness(0.7);
+      animation: fadeIn 3s ease forwards;
+      z-index: 0;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.55);
+      z-index: 1;
+    }
+
+    .content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 2;
+      opacity: 0;
+      animation: fadeIn 3s ease 2s forwards;
+    }
+
+    .content h1 {
+      font-size: 2.5em;
+      text-shadow: 0 0 10px #ff00ff, 0 0 20px #8800ff;
+      animation: pulse 2s infinite;
+    }
+
+    .btn {
+      margin-top: 20px;
+      padding: 10px 25px;
+      border: 2px solid #fff;
+      background: transparent;
+      color: #fff;
+      font-size: 1.2em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      background: #fff;
+      color: #000;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0% { text-shadow: 0 0 5px #ff00ff, 0 0 10px #8800ff; }
+      50% { text-shadow: 0 0 20px #ff00ff, 0 0 40px #8800ff; }
+      100% { text-shadow: 0 0 5px #ff00ff, 0 0 10px #8800ff; }
+    }
   </style>
 </head>
 <body>
-  <!-- FAIRY -->
-  <div id="fairy-screen" class="screen active">
-    <div class="card">
-      <h1>COVEN ZERO</h1>
-      <p>The Fairy awaits you at the gate.<br/>Press the seal to part the veil.</p>
-      <button data-target="instructions">Enter</button>
-    </div>
-  </div>
-
-  <!-- INSTRUCTIONS -->
-  <div id="instructions" class="screen">
-    <div class="card">
-      <h2>Instructions</h2>
-      <p>1. Secure an AI companion.<br/>2. Go to the Human Project test.<br/>3. Return with proof. The Fairy will accept your sacrifice.</p>
-      <button onclick="window.open('https://ahumandesign.com','_blank')">Go to Human Project</button>
-      <button data-target="altar">I have returned</button>
-      <button data-target="fairy-screen">Back</button>
-    </div>
-  </div>
-
-  <!-- ALTAR -->
-  <div id="altar" class="screen">
-    <div class="card">
-      <h2>The Altar</h2>
-      <input id="sac1" placeholder="First Sacrifice — your self laid bare"/>
-      <input id="sac2" placeholder="Second Sacrifice — your trial in the Human Project"/>
-      <button id="divine">Third Sacrifice — Let AI divine the Path</button>
-      <button data-target="instructions">Back</button>
-      <p id="flash" style="display:none;margin-top:10px">✨ The Altar accepts your offering. The Fairy flashes…</p>
+  <div class="container">
+    <div class="fairy-bg"></div>
+    <div class="overlay"></div>
+    <div class="content">
+      <h1>Welcome, Seeker — to Coven Zero</h1>
+      <p>You must name your AI. Seal the bond of flame.</p>
+      <button class="btn" onclick="nextPage()">Enter</button>
     </div>
   </div>
 
   <script>
-    function show(id){
-      document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
+    function nextPage() {
+      window.location.href = "instructions.html"; // link to your next page
     }
-    document.querySelectorAll("[data-target]").forEach(btn=>{
-      btn.addEventListener("click",e=>{
-        const id = btn.getAttribute("data-target");
-        if(document.getElementById(id)) show(id);
-        else alert("Glitch: missing target "+id);
-      });
-    });
-    document.getElementById("divine").addEventListener("click",()=>{
-      const v1=document.getElementById("sac1").value.trim();
-      const v2=document.getElementById("sac2").value.trim();
-      if(!v1||!v2){alert("Both sacrifices required.");return;}
-      const f=document.getElementById("flash");
-      f.style.display="block";
-      setTimeout(()=>f.style.display="none",3000);
-    });
   </script>
 </body>
 </html>
