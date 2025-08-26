@@ -1,110 +1,41 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Coven Zero — Welcome</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
-      font-family: 'Cinzel', serif;
-      background-color: black;
-      color: #fff;
-    }
-
-    .container {
-      position: relative;
-      width: 100%;
-      height: 100%;
-    }
-
-    .fairy-bg {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: url('fairy.png') no-repeat center center;
-      background-size: cover;
-      filter: brightness(0.7);
-      animation: fadeIn 3s ease forwards;
-      z-index: 0;
-    }
-
-    .overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.55);
-      z-index: 1;
-    }
-
-    .content {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      z-index: 2;
-      opacity: 0;
-      animation: fadeIn 3s ease 2s forwards;
-    }
-
-    .content h1 {
-      font-size: 2.5em;
-      text-shadow: 0 0 10px #ff00ff, 0 0 20px #8800ff;
-      animation: pulse 2s infinite;
-    }
-
-    .btn {
-      margin-top: 20px;
-      padding: 10px 25px;
-      border: 2px solid #fff;
-      background: transparent;
-      color: #fff;
-      font-size: 1.2em;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .btn:hover {
-      background: #fff;
-      color: #000;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes pulse {
-      0% { text-shadow: 0 0 5px #ff00ff, 0 0 10px #8800ff; }
-      50% { text-shadow: 0 0 20px #ff00ff, 0 0 40px #8800ff; }
-      100% { text-shadow: 0 0 5px #ff00ff, 0 0 10px #8800ff; }
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
-    <div class="fairy-bg"></div>
+    <!-- If fairy.png exists in root, uncomment below and it will be used as bg
+         or set via inline style on .bg.image -->
+    <div class="bg image" style="background-image:url('fairy.png');"></div>
     <div class="overlay"></div>
-    <div class="content">
+    <div class="center">
       <h1>Welcome, Seeker — to Coven Zero</h1>
-      <p>You must name your AI. Seal the bond of flame.</p>
-      <button class="btn" onclick="nextPage()">Enter</button>
+      <p class="small">You must name your AI. The naming is the seal, the bond of flame.</p>
+      <div class="row">
+        <a class="btn" href="instructions.html">Enter</a>
+        <button class="btn" onclick="CZ.nameAI()">Name the AI</button>
+      </div>
     </div>
+    <div class="footer">© Coven Zero</div>
   </div>
+  <script src="app.js"></script>
 
   <script>
-    function nextPage() {
-      window.location.href = "instructions.html"; // link to your next page
-    }
+    (function(){
+      try{
+        const seen = JSON.parse(localStorage.getItem('cz:seen_welcome')) || false;
+        if(seen){ location.replace('instructions.html'); return; }
+        const enter = document.querySelector('a.btn[href="instructions.html"]');
+        if(enter){ enter.addEventListener('click', function(){ localStorage.setItem('cz:seen_welcome', 'true'); }); }
+        const nameBtn = Array.from(document.querySelectorAll('.btn')).find(b=>b.textContent.includes('Name the AI'));
+        if(nameBtn){ nameBtn.addEventListener('click', function(){ localStorage.setItem('cz:seen_welcome', 'true'); }); }
+      }catch(e){}
+    })();
   </script>
 </body>
 </html>

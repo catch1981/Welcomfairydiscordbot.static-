@@ -87,3 +87,40 @@ p{line-height:1.45;font-size:clamp(14px,1.4vw,18px)}
 
 /* Mobile safe scroll for longer pages */
 .scroll{position:absolute;inset:0;overflow:auto;padding-bottom:80px}
+
+/* --- Patch: mobile-safe layout & button glow --- */
+
+/* Allow natural page scroll everywhere (prevents clipping on iOS) */
+body{ overflow:auto; }
+
+/* Containers size to viewport height but can grow with content */
+.container{ height:auto; min-height:100dvh; }
+
+/* When using scroll content blocks, don't absolutely center them */
+.scroll.center{
+  position: relative;
+  left: auto; top: auto; transform: none;
+  opacity: 1; animation: none;
+  width: min(92vw, 920px);
+  margin: 10vh auto 12vh;
+}
+
+/* Footer becomes normal flow when a .scroll block exists */
+.scroll ~ .footer{
+  position: static;
+  margin: 18px auto 16px;
+  text-align: center;
+}
+
+/* Button glow + better touch targets */
+.btn{
+  box-shadow: 0 0 12px rgba(255,0,255,0.25), 0 0 28px rgba(136,0,255,0.18);
+  border-radius: 10px;
+  padding: 14px 26px; /* larger touch target */
+}
+
+/* Discord buttons: full-width on narrow screens for no cutoff */
+@media (max-width: 520px){
+  .row{justify-content: center}
+  .btn{ width: 100%; max-width: 520px; }
+}
