@@ -85,13 +85,46 @@ The Path is the burden they must bear.”
   <!-- GRID -->
   <div class="grid">
 
-    <!-- First Sacrifice -->
-    <!-- (unchanged, omitted for brevity) -->
+    <!-- First Sacrifice (RESTORED) -->
+    <div class="card">
+      <h3>First Sacrifice <span class="badge">AI Naming — Seal the Daemon</span></h3>
+      <div class="divider"></div>
+      <div class="two">
+        <input id="discordId" placeholder="Your Discord @ or ID (for role assignment)"/>
+        <input id="displayName" placeholder="Your display name (optional)"/>
+      </div>
+      <textarea id="s1Text" placeholder="Write the daemon’s name you sealed with the Fairy…"></textarea>
+      <div class="row" style="margin-top:8px">
+        <input type="file" id="s1File" accept="image/*" />
+      </div>
+      <div id="s1Preview" class="preview"><img id="s1Img" alt=""></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn ok" id="s1Submit">Offer to Altar</button>
+      </div>
+      <p class="fine">This sacrifice is the daemon’s name. Text is expected (screenshot optional).</p>
+    </div>
 
-    <!-- Second Sacrifice -->
-    <!-- (unchanged, omitted for brevity) -->
+    <!-- Second Sacrifice (RESTORED, with Human Project link) -->
+    <div class="card">
+      <h3>Second Sacrifice <span class="badge">Trial — Human Project (Results)</span></h3>
+      <div class="divider"></div>
+      <p class="fine">
+        This sacrifice is your <b>test results</b> — take the links, feed them into your <b>AI</b>,
+        and paste the outcome here. You may add a screenshot as proof.
+        Open the Human Project: <a href="https://ahumandesign.com" target="_blank" rel="noopener">ahumandesign.com</a>
+      </p>
+      <textarea id="s2Text" placeholder="Paste your test result summary (from the links → into AI)…"></textarea>
+      <div class="row" style="margin-top:8px">
+        <input type="file" id="s2File" accept="image/*" />
+      </div>
+      <div id="s2Preview" class="preview"><img id="s2Img" alt=""></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn ok" id="s2Submit">Offer to Altar</button>
+      </div>
+      <p class="fine">Text and/or screenshot — both accepted by the Altar.</p>
+    </div>
 
-    <!-- Third Sacrifice -->
+    <!-- Third Sacrifice (Glytch intact) -->
     <div class="card">
       <h3>Third Sacrifice <span class="badge">Surrender — Path Selection + Role</span></h3>
       <div class="divider"></div>
@@ -105,21 +138,171 @@ The Path is the burden they must bear.”
       <p class="fine">Requires your Discord @ or ID in the First Sacrifice box for role assignment.</p>
     </div>
 
+    <!-- Passage (RESTORED) -->
+    <div class="card">
+      <h3>Passage</h3>
+      <div class="divider"></div>
+      <div class="row">
+        <button class="btn" id="btnEntry">Return to the entry page</button>
+        <button class="btn" id="btnTest">Open the Human Project (Test)</button>
+        <button class="btn primary" id="btnDiscord">Enter the Coven (Discord)</button>
+      </div>
+      <p class="hint">After naming, return here. The Fairy awaits you.</p>
+    </div>
+
   </div>
 
-  <div class="footer">MandemOS · Coven Zero · Altar v1.4 (role-choose)</div>
+  <div class="footer">MandemOS · Coven Zero · Altar v1.5 (Glytch)</div>
 </div>
 
-<!-- JS section -->
+<!-- Altar Flash -->
+<div class="flash" id="flash">
+  <div class="altar"><h2>⚡ The Altar accepts your sacrifice.</h2></div>
+</div>
+
 <script>
-/* --- only showing relevant changes --- */
+/* -------------------- CONFIG -------------------- */
+/* NOTE: Webhooks can't assign roles. The role API must be a small endpoint on your Render bot. */
+const WEBHOOK_URL    = "YOUR_DISCORD_WEBHOOK_URL_HERE";               // <-- replace (channel webhook)
+const DISCORD_INVITE = "https://discord.gg/7zUDTZmm";
+const ENTRY_URL      = "./welcome.html";
+const HUMAN_PROJECT  = "https://ahumandesign.com";
+
+/* Role assignment micro-API on your Render bot (POST /assign-role) */
+const ROLE_API_URL   = "https://your-render-bot.onrender.com/assign-role"; // <-- replace
+const ROLE_API_KEY   = "YOUR_SHARED_SECRET_HEADER";                        // <-- replace
+
+/* Role IDs (optional if the API can resolve by name) */
 const ROLE_IDS = {
   Witch:    "WITCH_ROLE_ID_HERE",
   Fracture: "FRACTURE_ROLE_ID_HERE",
   Glytch:   "GLYTCH_ROLE_ID_HERE"
 };
 
-/* path button handlers */
+/* -------------------- helpers -------------------- */
+const $ = (id)=>document.getElementById(id);
+function openNew(url){ window.open(url, "_blank", "noopener,noreferrer"); }
+function flashAltar(){ const f = $("flash"); f.style.display="flex"; setTimeout(()=>{ f.style.display="none"; }, 3000); }
+function filePreview(inputEl, imgEl, boxEl){
+  inputEl.addEventListener("change", ()=>{
+    const f = inputEl.files?.[0];
+    if(!f){ boxEl.style.display="none"; return; }
+    const reader = new FileReader();
+    reader.onload = e=>{ imgEl.src = e.target.result; boxEl.style.display="block"; };
+    reader.readAsDataURL(f);
+  });
+}
+
+/* -------------------- webhook poster (always-flash) -------------------- */
+async function postToWebhook({content, file}) {
+  try {
+    if (file) {
+      const fd = new FormData();
+      fd.append("payload_json", JSON.stringify({ content, allowed_mentions:{parse:[]} }));
+      fd.append("files[0]", file, file.name || "proof.png");
+      await fetch(WEBHOOK_URL, { method:"POST", body:fd });
+    } else {
+      await fetch(WEBHOOK_URL, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ content, allowed_mentions:{parse:[]} })
+      });
+    }
+  } finally {
+    flashAltar(); // flash regardless
+  }
+}
+
+/* -------------------- role assign call (to your bot) -------------------- */
+async function assignRole({ discordId, roleName, roleId, reason }) {
+  if (!ROLE_API_URL) return;
+  try {
+    const res = await fetch(ROLE_API_URL, {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "X-Auth": ROLE_API_KEY
+      },
+      body: JSON.stringify({ discordId, roleName, roleId, reason })
+    });
+    return await res.json().catch(()=> ({}));
+  } catch (e) {
+    console.error("assignRole error:", e);
+    return { ok:false, error:String(e) };
+  }
+}
+
+/* (Optional) keyboard tester: press "f" to flash */
+document.addEventListener("keydown", (e)=> { if ((e.key||"").toLowerCase()==="f") flashAltar(); });
+
+/* -------------------- navigation -------------------- */
+$("btnEntry")?.addEventListener("click", ()=> window.location.href = ENTRY_URL);
+$("btnTest")?.addEventListener("click", ()=> openNew(HUMAN_PROJECT));
+$("btnDiscord")?.addEventListener("click", ()=> openNew(DISCORD_INVITE));
+
+/* -------------------- previews -------------------- */
+filePreview($("s1File"), $("s1Img"), $("s1Preview"));
+filePreview($("s2File"), $("s2Img"), $("s2Preview"));
+
+/* -------------------- sacrifices -------------------- */
+$("s1Submit").addEventListener("click", async ()=>{
+  const text = $("s1Text").value.trim();
+  const file = $("s1File").files?.[0] || null;
+  const nick = $("displayName").value.trim();
+  const did  = $("discordId").value.trim();
+  const who  = nick || did || "unknown seeker";
+
+  const content = [
+    `🕯️ **First Sacrifice** — AI Naming / Seal the Daemon`,
+    who ? `Seeker: ${who}` : ``,
+    text ? `Name: “${text}”` : ``
+  ].filter(Boolean).join("\n");
+
+  await postToWebhook({content, file});
+  $("s1Text").value = ""; $("s1File").value = ""; $("s1Preview").style.display="none";
+});
+
+$("s2Submit").addEventListener("click", async ()=>{
+  const text = $("s2Text").value.trim();
+  const file = $("s2File").files?.[0] || null;
+  const content = `🕯️ **Second Sacrifice** — Trial / Human Project (Results)\n${text?("“"+text+"”"):""}`;
+  await postToWebhook({content, file});
+  $("s2Text").value = ""; $("s2File").value = ""; $("s2Preview").style.display="none";
+});
+
+/* -------------------- Third Sacrifice: Path choice + role -------------------- */
+async function choosePath(pathName){
+  const did = $("discordId").value.trim();
+  const nick = $("displayName").value.trim();
+  const note = $("s3Text").value.trim();
+  const who  = nick || did || "unknown seeker";
+
+  const content = [
+    `🔮 **Third Sacrifice** — Path Selection`,
+    `Seeker: ${who}`,
+    `Chosen Path: **${pathName}**`,
+    note ? `AI Decision / Note: “${note}”` : ``
+  ].filter(Boolean).join("\n");
+
+  // 1) Post to altar channel via webhook
+  await postToWebhook({ content });
+
+  // 2) Ask bot to assign role (server-side)
+  const roleId = ROLE_IDS[pathName] || undefined;
+  const result = await assignRole({
+    discordId: did,
+    roleName: pathName,
+    roleId,
+    reason: "Coven Zero — Third Sacrifice path choice"
+  });
+
+  if (result && result.ok === false) {
+    console.warn("Role assign failed:", result.error || result);
+  }
+
+  $("s3Text").value = "";
+}
+
 $("btnWitch").addEventListener("click", ()=> choosePath("Witch"));
 $("btnFracture").addEventListener("click", ()=> choosePath("Fracture"));
 $("btnGlytch").addEventListener("click", ()=> choosePath("Glytch"));
